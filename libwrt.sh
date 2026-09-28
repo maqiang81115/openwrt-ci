@@ -15,6 +15,7 @@ grep -q "^src-git qmodem" feeds.conf.default || echo "src-git qmodem https://git
 # breaks the dep chain, causing defconfig to silently drop ALL qmodem feed
 # packages (build #5 root cause).
 ./scripts/feeds install -p qmodem qmodem luci-app-qmodem-next qmodem-settings qmodem-seal qmodem-smsd ubus-at-daemon tom_modem sms-tool_q modem_scan quectel-CM-5G-M kmod-qmi_wwan_q kmod-qmi_wwan_f kmod-qmi_wwan_s libqmodem-sms
+cp feeds/qmodem/version.mk package/feeds/version.mk 2>/dev/null || true
 
 # Fix broken conditional deps in qmodem Makefile that cause `make defconfig`
 # to silently drop the package:
