@@ -21,7 +21,7 @@ if [ -f "$QMODEM_MK" ]; then
   sed -i '/kmod-mhi-wwan/d' "$QMODEM_MK"
   sed -i 's/quectel-CM-5G \\$/quectel-CM-5G-M \\/' "$QMODEM_MK"
   grep -q "kmod-mhi-wwan" "$QMODEM_MK" && { echo "ERROR: kmod-mhi-wwan still in qmodem Makefile"; exit 1; }
-  grep -q "QUCTEL_CM_5G:quectel-CM-5G " "$QMODEM_MK" && { echo "ERROR: quectel-CM-5G typo still in qmodem Makefile"; exit 1; }
+  grep -q "QUECTEL_CM_5G:quectel-CM-5G " "$QMODEM_MK" && { echo "ERROR: quectel-CM-5G typo still in qmodem Makefile"; exit 1; }
   echo "qmodem Makefile deps fixed"
 else
   echo "ERROR: qmodem feed install failed"; exit 1
