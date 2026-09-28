@@ -112,10 +112,27 @@ jobs:
     - name: Download DL Package(下载DL软件包)
       run: |
         cd $OPENWRT_PATH
+        rm -f tmp/.packageinfo tmp/.config-package.in tmp/.config-target.in
         make defconfig
         make download -j8
         find dl -size -1024c -exec ls -l {} \;
         find dl -size -1024c -exec rm -f {} \;
+
+    - name: Verify Required Packages(校验必备软件包)
+      run: |
+        cd $OPENWRT_PATH
+        MISSING=0
+        for pkg in qmodem luci-app-qmodem-next luci-i18n-qmodem-next-zh-cn luci-app-passwall luci-i18n-passwall-zh-cn uqmi umbim usb-modeswitch kmod-usb-serial-option kmod-usb-net-qmi-wwan kmod-usb-net-cdc-mbim kmod-usb-net-cdc-ncm kmod-usb-net-rndis kmod-usb-net-cdc-ether ip-full; do
+          if ! grep -q "^CONFIG_PACKAGE_${pkg}=y$" .config; then
+            echo "ERROR: CONFIG_PACKAGE_${pkg} is not =y after defconfig"
+            MISSING=1
+          fi
+        done
+        if [ "$MISSING" -ne 0 ]; then
+          echo "FATAL: required packages were dropped by defconfig, aborting before compile"
+          exit 1
+        fi
+        echo "All required packages verified =y in .config"
 
     - name: Compile Firmware(开始编译固件)
       id: compile
