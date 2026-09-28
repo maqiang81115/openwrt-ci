@@ -10,18 +10,26 @@ grep -q "^src-git qmodem" feeds.conf.default || echo "src-git qmodem https://git
 
 ./scripts/feeds update qmodem
 
-./scripts/feeds install -a -p qmodem
+# Install only needed qmodem packages. Do NOT use -a: the qmodem feed ships an
+# ancient ndisc6 (1.0.2) that overwrites the standard packages feed ndisc6 and
+# breaks the dep chain, causing defconfig to silently drop ALL qmodem feed
+# packages (build #5 root cause).
+./scripts/feeds install -p qmodem qmodem luci-app-qmodem-next qmodem-settings qmodem-seal qmodem-smsd ubus-at-daemon tom_modem sms-tool_q modem_scan quectel-CM-5G-M kmod-qmi_wwan_q kmod-qmi_wwan_f kmod-qmi_wwan_s libqmodem-sms
 
 # Fix broken conditional deps in qmodem Makefile that cause `make defconfig`
-# to silently drop the package (build #4: qmodem vanished from .config):
-# - kmod-mhi-wwan does not exist in any feed
+# to silently drop the package:
+# - kmod-mhi-wwan, kmod-mhi-pci-generic, kmod-pcie_mhi do not exist in any feed
 # - quectel-CM-5G is a typo; the real package is quectel-CM-5G-M
 QMODEM_MK="package/feeds/qmodem/qmodem/Makefile"
 if [ -f "$QMODEM_MK" ]; then
-  sed -i '/kmod-mhi-wwan/d' "$QMODEM_MK"
-  sed -i 's/quectel-CM-5G \\$/quectel-CM-5G-M \\/' "$QMODEM_MK"
-  grep -q "kmod-mhi-wwan" "$QMODEM_MK" && { echo "ERROR: kmod-mhi-wwan still in qmodem Makefile"; exit 1; }
-  grep -q "QUECTEL_CM_5G:quectel-CM-5G " "$QMODEM_MK" && { echo "ERROR: quectel-CM-5G typo still in qmodem Makefile"; exit 1; }
+  sed -i '/kmod-mhi-wwan/d; /kmod-mhi-pci-generic/d; /kmod-pcie_mhi/d' "$QMODEM_MK"
+  sed -i 's/quectel-CM-5G \\/quectel-CM-5G-M \\/g; s/quectel-CM-5G$/quectel-CM-5G-M/g' "$QMODEM_MK"
+  if grep -q "kmod-mhi-wwan\|kmod-mhi-pci-generic\|kmod-pcie_mhi" "$QMODEM_MK"; then
+    echo "ERROR: broken MHI dep still in qmodem Makefile"; exit 1
+  fi
+  if grep -Eq ":quectel-CM-5G([ \\]|$)" "$QMODEM_MK"; then
+    echo "ERROR: quectel-CM-5G typo still in qmodem Makefile"; exit 1
+  fi
   echo "qmodem Makefile deps fixed"
 else
   echo "ERROR: qmodem feed install failed"; exit 1
