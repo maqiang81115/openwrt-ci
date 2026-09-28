@@ -21,6 +21,8 @@ grep -q "^src-git qmodem" feeds.conf.default || echo "src-git qmodem https://git
 # breaks the dep chain, causing defconfig to silently drop ALL qmodem feed
 # packages (build #5 root cause).
 ./scripts/feeds install -p qmodem qmodem luci-app-qmodem-next qmodem-settings qmodem-seal qmodem-smsd ubus-at-daemon tom_modem sms-tool_q modem_scan quectel-CM-5G-M kmod-qmi_wwan_q kmod-qmi_wwan_f kmod-qmi_wwan_s libqmodem-sms
+# Remove ancient ndisc6 bundled in qmodem feed (1.0.2) - it overrides the standard ndisc6 and breaks the dependency chain
+rm -rf package/feeds/qmodem/ndisc6 feeds/qmodem/ndisc6 2>/dev/null || true
 # Remove broken ../../version.mk include and hardcode version (feeds install breaks the relative path)
 sed -i '/include ..\/..\/version.mk/d' package/feeds/qmodem/*/Makefile 2>/dev/null || true
 sed -i 's/PKG_VERSION:=$(QMODEM_VERSION)/PKG_VERSION:=3.4.0_rc3/' package/feeds/qmodem/*/Makefile 2>/dev/null || true
