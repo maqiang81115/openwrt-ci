@@ -2,8 +2,8 @@ name: IPQ60XX-6.12-WIFI
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: 0 19 * * *
+
+
 
 permissions:
   contents: write
